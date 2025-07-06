@@ -44,12 +44,12 @@ class _OfflinePhonesScreenState extends State<OfflinePhonesScreen> {
     }
   }
 
-  // إرسال رسالة نصية
+  // إرسال رسالة نصية - SMS فقط
   Future<void> _sendSMS(String phoneNumber) async {
     final Uri smsUri = Uri(scheme: 'sms', path: phoneNumber);
     try {
       if (await canLaunchUrl(smsUri)) {
-        await launchUrl(smsUri);
+        await launchUrl(smsUri, mode: LaunchMode.externalApplication);
       } else {
         _showSnackBar('لا يمكن إرسال رسالة نصية');
       }

@@ -295,7 +295,7 @@ class _ModeSelectorState extends State<ModeSelector> {
                 ),
               ),
             ),
-            const SizedBox(height: 480),
+            const SizedBox(height: 300),
             // Link "Next" button to navigation function
             LoginButton(
               onPressed: navigateToPage, // Call the navigation function

@@ -8,6 +8,7 @@ import 'package:pro/core/di/di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pro/cache/CacheHelper.dart';
 import 'package:pro/core/API/ApiKey.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TrustedContactsScreen extends StatefulWidget {
   const TrustedContactsScreen({Key? key}) : super(key: key);
@@ -114,8 +115,8 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
       });
     } else {
       supporters = [
-        {"name": "Mum", "image": null, "selected": false},
-        {"name": "Dad", "image": null, "selected": false},
+        {"name": "Mum", "image": null, "selected": false, "phone": ""},
+        {"name": "Dad", "image": null, "selected": false, "phone": ""},
       ];
       await saveSupporters();
     }
@@ -160,6 +161,7 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
             'selected': false,
             'id': state.result.supporterId ?? '',
             'email': _controller.text.trim(),
+            'phone': '', // Phone number will be added later
             'success': state.result.success
           };
 
@@ -194,6 +196,7 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
                     'Unknown',
                 'email': s['email'] ?? '',
                 'id': s['supporterId'] ?? s['id'] ?? '',
+                'phone': s['phone'] ?? s['phoneNumber'] ?? '',
                 'image': null,
                 'selected': false,
               };

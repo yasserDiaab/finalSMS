@@ -119,7 +119,7 @@ class SosCubit extends Cubit<SosState> {
       }
 
       int successCount = 0;
-      const String dangerMessage = "I am in danger";
+      const String dangerMessage = "SOS: أنا في خطر وأحتاج مساعدة عاجلة";
 
       // Show confirmation dialog for SMS
       if (_context != null) {
@@ -133,16 +133,16 @@ class SosCubit extends Cubit<SosState> {
 
       for (var supporter in supporterPhones) {
         try {
-          // Create SMS URI
+          // Create SMS URI - SMS only, no WhatsApp
           final Uri smsUri = Uri(
             scheme: 'sms',
             path: supporter.phoneNumber,
             queryParameters: {'body': dangerMessage},
           );
 
-          // Launch SMS app
+          // Launch SMS app directly - no WhatsApp suggestions
           if (await canLaunchUrl(smsUri)) {
-            await launchUrl(smsUri);
+            await launchUrl(smsUri, mode: LaunchMode.externalApplication);
             successCount++;
             log('✅ SMS sent to ${supporter.supporterName}: ${supporter.phoneNumber}');
           } else {
@@ -158,14 +158,14 @@ class SosCubit extends Cubit<SosState> {
       if (successCount > 0) {
         emit(SosSuccess(SosResponse(
           success: true,
-          message: 'SMS sent to $successCount supporters',
+          message: 'تم إرسال SMS إلى $successCount مؤيد',
         )));
       } else {
-        emit(const SosFailure('Failed to send SMS to any supporters'));
+        emit(const SosFailure('فشل في إرسال SMS إلى أي مؤيد'));
       }
     } catch (e) {
       log('❌ Error in _sendSMSToSupporters: $e');
-      emit(SosFailure('Error sending SMS: $e'));
+      emit(SosFailure('خطأ في إرسال SMS: $e'));
     }
   }
 
@@ -178,9 +178,10 @@ class SosCubit extends Cubit<SosState> {
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('إرسال رسالة SMS'),
+              title: const Text('إرسال رسالة SMS عاجلة'),
               content: Text(
-                'سيتم إرسال رسالة "I am in danger" إلى $supporterCount مؤيد.\n\n'
+                'سيتم إرسال رسالة "SOS: أنا في خطر وأحتاج مساعدة عاجلة" إلى $supporterCount مؤيد.\n\n'
+                'هذا الإجراء سيستخدم SMS فقط (وليس الواتساب).\n\n'
                 'هل تريد المتابعة؟',
               ),
               actions: [
@@ -191,7 +192,7 @@ class SosCubit extends Cubit<SosState> {
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('إرسال'),
+                  child: const Text('إرسال SMS'),
                 ),
               ],
             );

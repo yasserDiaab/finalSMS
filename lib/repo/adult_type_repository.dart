@@ -13,7 +13,7 @@ class AdultTypeRepository {
     required String adultType,
   }) async {
     // استخدام EndPoint.adultType من ApiKey
-    final url = Uri.parse(EndPoint.adultType);
+    final url = Uri.parse('$baseUrl${EndPoint.adultType}');
 
     print("Debug - Sending request to: $url");
     print("Debug - adultType: $adultType");

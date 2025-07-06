@@ -38,22 +38,22 @@ class EndPoint {
       "https://followsafe.runasp.net/api/SupporterTracking/trip-locations/$tripId";
 
   // Authentication endpoints
-  static const String signUp = "${baseUrl}register";
-  static const String confirmEmail = "${baseUrl}confirm-email";
+  static const String signUp = "/Authentication/register";
+  static const String confirmEmail = "/Authentication/confirm-email";
   static const String signIn = "/Authentication/login";
   static const String resendConfirmationEmail =
-      "${baseUrl}resend-confirmation-email";
-  static const String forgotPassword = "${baseUrl}forget-password";
-  static const String resetPassword = "${baseUrl}reset-password";
-  static const String adultType = "${baseUrl}adult-type";
-  static const String checkOtp = "${baseUrl}Check_otp";
+      "/Authentication/resend-confirmation-email";
+  static const String forgotPassword = "/Authentication/forget-password";
+  static const String resetPassword = "/Authentication/reset-password";
+  static const String adultType = "/Authentication/adult-type";
+  static const String checkOtp = "/Authentication/Check_otp";
 
   // ✅ OTP Endpoints
-  static const String sendOtp = "${baseUrl}send-otp";
-  static const String verifyOtp = "${baseUrl}verify-otp";
+  static const String sendOtp = "/Authentication/send-otp";
+  static const String verifyOtp = "/Authentication/verify-otp";
 
   static String getUserDataEndPoint(String id) {
-    return "${baseUrl}user/get-user/$id";
+    return "/user/get-user/$id";
   }
 }
 
