@@ -7,11 +7,15 @@ import 'package:geolocator/geolocator.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
+import 'package:pro/services/offline_sync_service.dart';
+import 'package:pro/core/di/di.dart';
 
 class KidSOSService {
   static final KidSOSService _instance = KidSOSService._internal();
   factory KidSOSService() => _instance;
   KidSOSService._internal();
+
+  final OfflineSyncService _offlineSyncService = getIt<OfflineSyncService>();
 
   // Get the current user ID from cache
   String? getUserId() {
@@ -82,17 +86,15 @@ class KidSOSService {
   // Get supporters from trusted contacts
   Future<List<Map<String, dynamic>>> getTrustedSupporters() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = getUserId();
-      final String supportersKey =
-          userId != null ? 'supporters_$userId' : 'supporters_default';
-
-      final String? data = prefs.getString(supportersKey);
-      if (data != null) {
-        final List<dynamic> decoded = jsonDecode(data);
-        return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
-      }
-      return [];
+      final localSupporters = await _offlineSyncService.getKidSupporterPhones();
+      return localSupporters
+          .map((s) => {
+                'name': s.supporterName,
+                'email': s.email ?? '',
+                'id': s.supporterId,
+                'phone': s.phoneNumber,
+              })
+          .toList();
     } catch (e) {
       log("Error getting trusted supporters: $e");
       return [];
@@ -128,12 +130,14 @@ class KidSOSService {
       // Get last known location from cache
       final lastLat = CacheHelper.getData(key: 'last_latitude');
       final lastLng = CacheHelper.getData(key: 'last_longitude');
+
       String locationText = '';
       if (lastLat != null && lastLng != null) {
-        locationText = '\nآخر موقع معروف: ($lastLat, $lastLng)';
+        locationText =
+            '\nLocation: https://www.google.com/maps/search/?api=1&query=$lastLat,$lastLng';
       }
       final String dangerMessage =
-          "SOS: الطفل في خطر ويحتاج مساعدة عاجلة$locationText";
+          "I am in danger!\nSOS: الطفل في خطر ويحتاج مساعدة عاجلة$locationText";
 
       // Show confirmation dialog for SMS if context is available
       if (context != null) {
@@ -158,7 +162,7 @@ class KidSOSService {
 
           // Launch SMS app directly - no WhatsApp suggestions
           if (await canLaunchUrl(smsUri)) {
-            await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+            await launchUrl(smsUri, mode: LaunchMode.platformDefault);
             successCount++;
             log('✅ KID SOS: SMS sent to ${supporter['name'] ?? 'Unknown'}: $phoneNumber');
           } else {

@@ -81,7 +81,7 @@ class SignUpListener extends StatelessWidget {
 
       final offlineSyncService = getIt<OfflineSyncService>();
       final success =
-          await offlineSyncService.syncSupporterPhones(forceSync: true);
+          await offlineSyncService.syncTravelerSupporterPhones(forceSync: true);
 
       if (success) {
         log("✅ Supporter phones synced successfully after sign up");
@@ -102,7 +102,7 @@ class SignUpListener extends StatelessWidget {
       log("📊 ===== LOCAL DATABASE CONTENTS (SIGN UP) =====");
 
       final offlineSyncService = getIt<OfflineSyncService>();
-      final phones = await offlineSyncService.getSupporterPhones();
+      final phones = await offlineSyncService.getTravelerSupporterPhones();
       final stats = await offlineSyncService.getDatabaseStats();
 
       log("📱 Total phones in database: ${phones.length}");

@@ -15,8 +15,8 @@ class OfflineSyncCubit extends Cubit<OfflineSyncState> {
       emit(OfflineSyncLoading());
       log('🔄 Loading supporter phones...');
 
-      final phones =
-          await _syncService.getSupporterPhones(forceRefresh: forceRefresh);
+      final phones = await _syncService.getTravelerSupporterPhones(
+          forceRefresh: forceRefresh);
       final stats = await _syncService.getDatabaseStats();
 
       if (phones.isNotEmpty) {
@@ -47,14 +47,14 @@ class OfflineSyncCubit extends Cubit<OfflineSyncState> {
       log('🔄 Syncing with server...');
 
       final success =
-          await _syncService.syncSupporterPhones(forceSync: forceSync);
+          await _syncService.syncTravelerSupporterPhones(forceSync: forceSync);
 
       if (success) {
         // إعادة تحميل البيانات بعد المزامنة
         await loadSupporterPhones();
       } else {
         // إذا فشلت المزامنة، جرب تحميل البيانات المحلية
-        final cachedPhones = await _syncService.getSupporterPhones();
+        final cachedPhones = await _syncService.getTravelerSupporterPhones();
         if (cachedPhones.isNotEmpty) {
           emit(OfflineSyncNoConnection(
             cachedPhones: cachedPhones,

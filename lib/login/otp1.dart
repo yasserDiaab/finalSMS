@@ -173,7 +173,7 @@ class _OTPState extends State<OTP> {
 
       final offlineSyncService = getIt<OfflineSyncService>();
       final success =
-          await offlineSyncService.syncSupporterPhones(forceSync: true);
+          await offlineSyncService.syncTravelerSupporterPhones(forceSync: true);
 
       if (success) {
         log("✅ Supporter phones synced successfully after OTP verification");
@@ -194,7 +194,7 @@ class _OTPState extends State<OTP> {
       log("📊 ===== LOCAL DATABASE CONTENTS (OTP) =====");
 
       final offlineSyncService = getIt<OfflineSyncService>();
-      final phones = await offlineSyncService.getSupporterPhones();
+      final phones = await offlineSyncService.getTravelerSupporterPhones();
       final stats = await offlineSyncService.getDatabaseStats();
 
       log("📱 Total phones in database: ${phones.length}");

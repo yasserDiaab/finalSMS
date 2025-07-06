@@ -110,7 +110,8 @@ class SosCubit extends Cubit<SosState> {
       log('📱 Sending SMS to supporters...');
 
       // Get supporter phones from local database
-      final supporterPhones = await _offlineSyncService.getSupporterPhones();
+      final supporterPhones =
+          await _offlineSyncService.getTravelerSupporterPhones();
 
       if (supporterPhones.isEmpty) {
         log('⚠️ No supporter phones found in local database');
@@ -119,7 +120,17 @@ class SosCubit extends Cubit<SosState> {
       }
 
       int successCount = 0;
-      const String dangerMessage = "SOS: أنا في خطر وأحتاج مساعدة عاجلة";
+      // Get last known location from cache
+      final lastLat = CacheHelper.getData(key: 'last_latitude');
+      final lastLng = CacheHelper.getData(key: 'last_longitude');
+
+      String locationText = '';
+      if (lastLat != null && lastLng != null) {
+        locationText =
+            '\nLocation: https://www.google.com/maps/search/?api=1&query=$lastLat,$lastLng';
+      }
+      final String dangerMessage =
+          "I am in danger!\nSOS: أنا في خطر وأحتاج مساعدة عاجلة$locationText";
 
       // Show confirmation dialog for SMS
       if (_context != null) {
@@ -142,7 +153,7 @@ class SosCubit extends Cubit<SosState> {
 
           // Launch SMS app directly - no WhatsApp suggestions
           if (await canLaunchUrl(smsUri)) {
-            await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+            await launchUrl(smsUri, mode: LaunchMode.platformDefault);
             successCount++;
             log('✅ SMS sent to ${supporter.supporterName}: ${supporter.phoneNumber}');
           } else {

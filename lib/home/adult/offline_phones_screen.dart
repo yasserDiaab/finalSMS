@@ -49,7 +49,7 @@ class _OfflinePhonesScreenState extends State<OfflinePhonesScreen> {
     final Uri smsUri = Uri(scheme: 'sms', path: phoneNumber);
     try {
       if (await canLaunchUrl(smsUri)) {
-        await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+        await launchUrl(smsUri, mode: LaunchMode.platformDefault);
       } else {
         _showSnackBar('لا يمكن إرسال رسالة نصية');
       }
