@@ -11,8 +11,9 @@ import 'package:pro/models/LocationNotificationModel.dart';
 class SignalRService {
   // Singleton instance
   static SignalRService? _instance;
-  static SignalRService get instance => _instance ??= SignalRService._internal();
-  
+  static SignalRService get instance =>
+      _instance ??= SignalRService._internal();
+
   SignalRService._internal();
 
   // Notification Hub for SOS
@@ -52,7 +53,8 @@ class SignalRService {
       StreamController<LocationNotificationModel>.broadcast();
 
   // Stream عام يمكن الاستماع له في أي مكان
-  Stream<LocationNotificationModel> get locationStream => _locationController.stream;
+  Stream<LocationNotificationModel> get locationStream =>
+      _locationController.stream;
 
   bool _isNotificationConnected = false;
   bool _isTrackingConnected = false;
@@ -69,7 +71,7 @@ class SignalRService {
       log('⚠️ Connection already being started, skipping...');
       return;
     }
-    
+
     // If already connected, don't start again
     if (_isNotificationConnected && _isTrackingConnected) {
       log('✅ SignalR connections already established, skipping...');
@@ -77,7 +79,7 @@ class SignalRService {
     }
 
     _isStartingConnection = true;
-    
+
     try {
       // Start notification hub connection
       await _startNotificationConnection();
@@ -172,9 +174,9 @@ class SignalRService {
             log('❌ Unexpected data format in TripStarted event');
             return;
           }
-          
+
           _tripEventsController.add({'event': 'TripStarted', 'data': data});
-          
+
           // Log detailed data for debugging
           log('🔍 TripStarted data details:');
           log('  - Raw data: $data');
@@ -188,7 +190,7 @@ class SignalRService {
           log('  - name: ${data['name']}');
           log('  - userName: ${data['userName']}');
           log('  - fullName: ${data['fullName']}');
-          
+
           // Handle trip start notification for supporters
           try {
             final tripNotification = TripNotificationModel.fromJson(data);
@@ -197,7 +199,7 @@ class SignalRService {
             log('  - TravelerId: ${tripNotification.travelerId}');
             log('  - TravelerName: ${tripNotification.travelerName}');
             log('  - StartTime: ${tripNotification.startTime}');
-            
+
             // Check if data is valid before sending to notification service
             if (tripNotification.travelerName.isEmpty) {
               log('⚠️ Warning: TravelerName is empty in SignalR!');
@@ -208,28 +210,40 @@ class SignalRService {
             if (tripNotification.startTime.isEmpty) {
               log('⚠️ Warning: StartTime is empty in SignalR!');
             }
-            
+
             _notificationService.handleTripStartNotification(tripNotification);
             log('Trip start notification processed for ${tripNotification.travelerName}');
           } catch (e) {
             log('❌ Error processing trip start notification: $e');
             log('❌ Error details: ${e.toString()}');
-            
+
             // Try to create notification with fallback data
             try {
               final fallbackData = {
                 'TripId': data['TripId'] ?? data['tripId'] ?? '',
                 'TravelerId': data['TravelerId'] ?? data['travelerId'] ?? '',
-                'TravelerName': data['TravelerName'] ?? data['travelerName'] ?? data['name'] ?? data['userName'] ?? data['fullName'] ?? 'Unknown Traveler',
-                'TravelerPhone': data['TravelerPhone'] ?? data['travelerPhone'] ?? data['phone'] ?? '',
-                'StartTime': data['StartTime'] ?? data['startTime'] ?? DateTime.now().toIso8601String(),
+                'TravelerName': data['TravelerName'] ??
+                    data['travelerName'] ??
+                    data['name'] ??
+                    data['userName'] ??
+                    data['fullName'] ??
+                    'Unknown Traveler',
+                'TravelerPhone': data['TravelerPhone'] ??
+                    data['travelerPhone'] ??
+                    data['phone'] ??
+                    '',
+                'StartTime': data['StartTime'] ??
+                    data['startTime'] ??
+                    DateTime.now().toIso8601String(),
                 'Status': data['Status'] ?? data['status'] ?? 'Active',
                 'Action': data['Action'] ?? data['action'] ?? 'Started',
               };
-              
+
               log('🔄 Trying fallback data: $fallbackData');
-              final fallbackNotification = TripNotificationModel.fromJson(fallbackData);
-              _notificationService.handleTripStartNotification(fallbackNotification);
+              final fallbackNotification =
+                  TripNotificationModel.fromJson(fallbackData);
+              _notificationService
+                  .handleTripStartNotification(fallbackNotification);
               log('✅ Fallback trip notification processed for ${fallbackNotification.travelerName}');
             } catch (fallbackError) {
               log('❌ Fallback notification also failed: $fallbackError');
@@ -252,13 +266,13 @@ class SignalRService {
             log('❌ Unexpected data format in TripEnded event');
             return;
           }
-          
+
           _tripEventsController.add({'event': 'TripEnded', 'data': data});
         }
       });
 
       // Listen for LocationUpdate event (جديد)
-      _trackingHubConnection!.on('LocationUpdate', (args) {
+      _trackingHubConnection!.on('LocationUpdate', (args) async {
         log('Received LocationUpdate event: $args');
         if (args != null && args.isNotEmpty) {
           Map<String, dynamic> data;
@@ -273,6 +287,11 @@ class SignalRService {
           try {
             final location = LocationNotificationModel.fromJson(data);
             log('✅ LocationNotificationModel created: lat=${location.latitude}, lng=${location.longitude}');
+            // Save last known location to cache
+            await CacheHelper.saveData(
+                key: 'last_latitude', value: location.latitude);
+            await CacheHelper.saveData(
+                key: 'last_longitude', value: location.longitude);
             _locationController.add(location);
           } catch (e) {
             log('❌ Error parsing LocationNotificationModel: $e');
@@ -363,10 +382,10 @@ class SignalRService {
     try {
       log('🚗 Starting trip tracking via SignalR for traveler: $travelerId');
       // Get traveler name from cache
-      final travelerName = CacheHelper.getData(key: ApiKey.name)?.toString() ?? 
-                          CacheHelper.getData(key: "userName")?.toString() ??
-                          CacheHelper.getData(key: "fullName")?.toString() ??
-                          "Unknown Traveler";
+      final travelerName = CacheHelper.getData(key: ApiKey.name)?.toString() ??
+          CacheHelper.getData(key: "userName")?.toString() ??
+          CacheHelper.getData(key: "fullName")?.toString() ??
+          "Unknown Traveler";
       log('🚗 SignalR: Traveler details:');
       log('  - TravelerId: $travelerId');
       log('  - TravelerName: $travelerName');
@@ -380,7 +399,8 @@ class SignalRService {
       };
       log('🚗 SignalR: Sending trip data (kid/traveler): $tripData');
       // Log إضافي يوضح نوع المستخدم
-      if (travelerName.toLowerCase().contains('kid') || travelerName.toLowerCase().contains('طفل')) {
+      if (travelerName.toLowerCase().contains('kid') ||
+          travelerName.toLowerCase().contains('طفل')) {
         log('🟢 [DEBUG] Trip start notification sent for KID: $tripData');
       } else {
         log('🔵 [DEBUG] Trip start notification sent for TRAVELER: $tripData');

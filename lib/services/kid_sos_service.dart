@@ -125,7 +125,15 @@ class KidSOSService {
       }
 
       int successCount = 0;
-      const String dangerMessage = "SOS: الطفل في خطر ويحتاج مساعدة عاجلة";
+      // Get last known location from cache
+      final lastLat = CacheHelper.getData(key: 'last_latitude');
+      final lastLng = CacheHelper.getData(key: 'last_longitude');
+      String locationText = '';
+      if (lastLat != null && lastLng != null) {
+        locationText = '\nآخر موقع معروف: ($lastLat, $lastLng)';
+      }
+      final String dangerMessage =
+          "SOS: الطفل في خطر ويحتاج مساعدة عاجلة$locationText";
 
       // Show confirmation dialog for SMS if context is available
       if (context != null) {
